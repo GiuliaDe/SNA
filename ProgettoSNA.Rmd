@@ -1,0 +1,134 @@
+---
+title: "ProgettoSNA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## 1-2 Importa grafo
+
+Estrae grafo
+
+```{r inizializza}
+library(igraph)
+goriginal <- read.graph("/home/giulia/Progetti/snaR/soc-themarker.edges",format="ncol", directed = FALSE)
+```
+
+## Estrae giant component
+
+Estrae giant component
+
+```{r giantcomponent}
+comp = components(goriginal)
+
+#estrai grafo giant components
+gc_index = which.max(comp$csize) # index of the GC in the csize vector
+# indices of vertices that are member of the GC
+gc_indices = which(comp$membership == gc_index)
+gc_vertices = V(goriginal)[gc_indices]
+g = induced.subgraph(goriginal, gc_vertices)
+```
+
+
+
+### Metriche grafo
+
+#### Degree
+
+```{r degree}
+head(degree(g))
+maxdegree = max(degree(g))
+meandegree = mean(degree(g))
+cat ("Max degree: ",maxdegree, " , mean degree: ",meandegree, "\n", sep = "")
+```
+
+##### Grafici degree
+
+```{r grafici degree}
+
+multipleplot = par(mfrow=c(3,1))
+
+d.g = degree(g)
+dd = degree.distribution(g)
+dd = dd[-1]
+d = 1:max(d.g)
+ind <- (dd != 0)
+
+plot(d[ind], dd[ind], log="xy", col="blue",
+     xlab=c("Log-Degree"), ylab=c("Log-Intensity"),
+     main="Log-Log Degree Density Function")
+
+plot(d[ind], dd[ind], log="y", col="blue",
+     xlab=c("Degree"), ylab=c("Log-Intensity"),
+     main="Lin-Log Degree Density Function")
+
+plot(d[ind], dd[ind], col="blue",
+     xlab=c("Degree"), ylab=c("Intensity"),
+     main="(Lin-lin) Degree Density Function")
+
+par(multipleplot)
+```
+
+
+##### Grafici density degree
+
+```{r grafici density degree}
+
+hist(degree(g), freq = FALSE, breaks = d, right = FALSE, col="blue", xlab=c("Degree"), ylab=c("Intensity"), main="Histogram of the Degree Density", xlim = c(1,50))
+
+```
+
+##### CCDF
+
+```{r grafici density ccdf}
+F <- ecdf(d.g)
+x <- seq(min(d.g), max(d.g), 1)
+plot(x, 1 - F(x), log="xy", main="Degree CCDF", ylab="P(X>d)",
+xlab="Degree (d)", xlim=c(1,1000), col="red")
+```
+
+#### Assortativity
+
+```{r assortativity}
+ass = assortativity.degree(g)
+cat ("Assortativity degree: ",ass, "\n", sep = "")
+```
+
+
+#### Transitivity
+
+Due misure di clustering. Transitivity totale è il rapporto tra la somma totale dei triangoli per ogni nodo, diviso la somma delle triplette per ogni nodo.
+Transitivity locale, calcola il rapporto tra triangoli e triplette per ogni singolo nodo. Quindi si calcola la media sui valori.
+
+```{r transitivity}
+tr =transitivity(g)
+
+tr_media = mean(transitivity(g, "local"), na.rm = TRUE)
+
+cat ("Transitivity: ",tr," ,transitivity media: ",tr_media, "\n", sep = "")
+```
+
+#### Centrality
+
+```{r centrality}
+cl = closeness(g, vids=V(g)[1])
+cat ("Closeness: ",cl, "\n", sep = "")
+```
+
+Betweenness
+
+```{r betweeness}
+#bt = betweenness(g, v=V(g))
+#cat ("Betweeness: ",bt, "\n", sep = "")
+```
+
+```{r betweeness values}
+#edge_bet = edge.betweenness(g)
+#index_max = which.max(edge_bet)
+#edge_max = E(g)[index_max]
+#max_bet = edge_bet[index_max]
+#cat ("Index of the edge with max betweenness: ", index_max, "\n", sep = "")
+```

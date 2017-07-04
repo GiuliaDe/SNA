@@ -1,6 +1,6 @@
 ---
 title: "ProgettoSNA"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -138,31 +138,18 @@ Betweenness
 
 ```{r}
 
-g.sub1 <- induced.subgraph(g, V(g)[which(degree(g) > 48)])
+g.sub1 <- induced.subgraph(g, V(g)[which(degree(g) > 180)])
 g.sub1.u <- as.undirected(g.sub1)
 fg.comm <- fastgreedy.community(g.sub1.u)
 
 ```
 
-
+fg
 ### Find community
 
 ```{r}
 
-find_index_larger_community = function(gcomm){
-  index_max =-1
-  elements_max = 0
-  num_community = max(gcomm$membership)
-  for (i in 1:num_community){
-    t = gcomm$membership == i
-    num_nodes = length(t[t==TRUE])
-    if(num_nodes>elements_max){
-      index_max=i
-      elements_max=num_nodes
-    }
-  }
-  return (index_max)
-}
+
 
 find_index_smaller_community =  function(gcomm){
   index_min =-1
@@ -180,8 +167,8 @@ find_index_smaller_community =  function(gcomm){
 }
 
 
-eliminate_community = function(g, gcomm) {
-  index_min_comm = find_index_smaller_community(gcomm)
+eliminate_community = function(g, gcomm, index_min_comm) {
+  #index_min_comm = find_index_smaller_community(gcomm)
   if (index_min_comm == -1) {
     return (g)
   }
@@ -191,12 +178,52 @@ eliminate_community = function(g, gcomm) {
 
 ```
 
+Elimina comunità, iterativo
+```{r comm_elimina}
+
+find_index_smaller_community =  function(gcomm, currindex){
+  index_min =-1
+  elements_min = 100000
+  num_community = max(gcomm$membership)
+  for (i in 1:num_community){
+    if (!is.element(i, currindex)){
+      t = gcomm$membership == i
+      num_nodes = length(t[t==TRUE])
+      if(num_nodes<elements_min){
+        index_min=i
+        elements_min=num_nodes
+      }
+    }}
+  return (index_min)
+}
+
+
+eliminate_another_community = function(g, gcomm, index_toeliminate) {
+  #index_min_comm = find_index_smaller_community(gcomm)
+  #if (index_min_comm == -1) {
+  #  return (g)
+  #}
+
+  ret = induced.subgraph(g, V(g)[!(gcomm$membership %in% index_toeliminate)])
+  return (ret)
+}
+
+
+```
+
+
 
 ### ELiminate communities
 
 ```{r}
 
-g1 <- eliminate_community(g,fg.comm)
+currindex = array()
+
+newindex = find_index_smaller_community(fg.comm, currindex)
+currindex = c(currindex, newindex)
+currindex = currindex[2:length(currindex)]
+
+g1 <- eliminate_another_community(g, fg.comm, currindex)
 
 maxdegree1 = max(degree(g1))
 meandegree1 = mean(degree(g1))
@@ -218,11 +245,10 @@ cat ("Transitivity: ",tr1," ,transitivity media: ",tr_media1, "\n", sep = "")
 ### Calcola e elimina comunità
 
 ```{r}
-g.sub1 <- induced.subgraph(g1, V(g1)[which(degree(g1) > 180)])
-g.sub1.u <- as.undirected(g.sub1)
-fg.comm1 <- fastgreedy.community(g.sub1.u)
+newindex = find_index_smaller_community(fg.comm, currindex)
+currindex = c(currindex, newindex)
 
-g2 <- eliminate_community(g,fg.comm1)
+g2 <- eliminate_another_community(g, fg.comm, currindex)
 
 maxdegree1 = max(degree(g2))
 meandegree1 = mean(degree(g2))
@@ -239,4 +265,5 @@ cat ("Grafo originale: Transitivity: ",tr," ,transitivity media: ",tr_media, "\n
 cat ("Transitivity: ",tr1," ,transitivity media: ",tr_media1, "\n", sep = "")
 
 ```
+
 

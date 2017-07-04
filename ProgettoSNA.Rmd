@@ -132,3 +132,111 @@ Betweenness
 #max_bet = edge_bet[index_max]
 #cat ("Index of the edge with max betweenness: ", index_max, "\n", sep = "")
 ```
+
+
+## Calcolare le comunità
+
+```{r}
+
+g.sub1 <- induced.subgraph(g, V(g)[which(degree(g) > 48)])
+g.sub1.u <- as.undirected(g.sub1)
+fg.comm <- fastgreedy.community(g.sub1.u)
+
+```
+
+
+### Find community
+
+```{r}
+
+find_index_larger_community = function(gcomm){
+  index_max =-1
+  elements_max = 0
+  num_community = max(gcomm$membership)
+  for (i in 1:num_community){
+    t = gcomm$membership == i
+    num_nodes = length(t[t==TRUE])
+    if(num_nodes>elements_max){
+      index_max=i
+      elements_max=num_nodes
+    }
+  }
+  return (index_max)
+}
+
+find_index_smaller_community =  function(gcomm){
+  index_min =-1
+  elements_min = 100000
+  num_community = max(gcomm$membership)
+  for (i in 1:num_community){
+    t = gcomm$membership == i
+    num_nodes = length(t[t==TRUE])
+    if(num_nodes<elements_min){
+      index_min=i
+      elements_min=num_nodes
+    }
+  }
+  return (index_min)
+}
+
+
+eliminate_community = function(g, gcomm) {
+  index_min_comm = find_index_smaller_community(gcomm)
+  if (index_min_comm == -1) {
+    return (g)
+  }
+  ret = induced.subgraph(g, V(g)[which(gcomm$membership != index_min_comm)])
+  return (ret)
+}
+
+```
+
+
+### ELiminate communities
+
+```{r}
+
+g1 <- eliminate_community(g,fg.comm)
+
+maxdegree1 = max(degree(g1))
+meandegree1 = mean(degree(g1))
+cat ("Grafo originale: Max degree: ",maxdegree, " , mean degree: ",meandegree, "\n", sep = "")
+cat ("Max degree: ",maxdegree1, " , mean degree: ",meandegree1, "\n", sep = "")
+
+ass1 = assortativity.degree(g1)
+cat ("Grafo originale: Assortativity degree: ",ass, "\n", sep = "")
+cat ("Assortativity degree: ",ass1, "\n", sep = "")
+
+tr1 =transitivity(g1)
+tr_media1 = mean(transitivity(g1, "local"), na.rm = TRUE)
+cat ("Grafo originale: Transitivity: ",tr," ,transitivity media: ",tr_media, "\n", sep = "")
+cat ("Transitivity: ",tr1," ,transitivity media: ",tr_media1, "\n", sep = "")
+
+```
+
+
+### Calcola e elimina comunità
+
+```{r}
+g.sub1 <- induced.subgraph(g1, V(g1)[which(degree(g1) > 180)])
+g.sub1.u <- as.undirected(g.sub1)
+fg.comm1 <- fastgreedy.community(g.sub1.u)
+
+g2 <- eliminate_community(g,fg.comm1)
+
+maxdegree1 = max(degree(g2))
+meandegree1 = mean(degree(g2))
+cat ("Grafo originale: Max degree: ",maxdegree, " , mean degree: ",meandegree, "\n", sep = "")
+cat ("Max degree: ",maxdegree1, " , mean degree: ",meandegree1, "\n", sep = "")
+
+ass1 = assortativity.degree(g2)
+cat ("Grafo originale: Assortativity degree: ",ass, "\n", sep = "")
+cat ("Assortativity degree: ",ass1, "\n", sep = "")
+
+tr1 =transitivity(g2)
+tr_media1 = mean(transitivity(g2, "local"), na.rm = TRUE)
+cat ("Grafo originale: Transitivity: ",tr," ,transitivity media: ",tr_media, "\n", sep = "")
+cat ("Transitivity: ",tr1," ,transitivity media: ",tr_media1, "\n", sep = "")
+
+```
+

@@ -144,39 +144,8 @@ fg.comm <- fastgreedy.community(g.sub1.u)
 
 ```
 
-fg
+
 ### Find community
-
-```{r}
-
-
-
-find_index_smaller_community =  function(gcomm){
-  index_min =-1
-  elements_min = 100000
-  num_community = max(gcomm$membership)
-  for (i in 1:num_community){
-    t = gcomm$membership == i
-    num_nodes = length(t[t==TRUE])
-    if(num_nodes<elements_min){
-      index_min=i
-      elements_min=num_nodes
-    }
-  }
-  return (index_min)
-}
-
-
-eliminate_community = function(g, gcomm, index_min_comm) {
-  #index_min_comm = find_index_smaller_community(gcomm)
-  if (index_min_comm == -1) {
-    return (g)
-  }
-  ret = induced.subgraph(g, V(g)[which(gcomm$membership != index_min_comm)])
-  return (ret)
-}
-
-```
 
 Elimina comunità, iterativo
 ```{r comm_elimina}

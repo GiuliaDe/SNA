@@ -138,7 +138,7 @@ Betweenness
 
 ```{r}
 
-g.sub1 <- induced.subgraph(g, V(g)[which(degree(g) > 180)])
+g.sub1 <- induced.subgraph(g, V(g)[which(degree(g) > 48)])
 g.sub1.u <- as.undirected(g.sub1)
 fg.comm <- fastgreedy.community(g.sub1.u)
 
@@ -186,52 +186,48 @@ eliminate_another_community = function(g, gcomm, index_toeliminate) {
 
 ```{r}
 
+assortativityV = ass
+maxdegreeV = maxdegree
+meandegreeV = meandegree
+transitivityV = tr
+meantransitivityV = tr_media
+
 currindex = array()
 
-newindex = find_index_smaller_community(fg.comm, currindex)
-currindex = c(currindex, newindex)
-currindex = currindex[2:length(currindex)]
+for (i in 1:7){
+  
+  newindex = find_index_smaller_community(fg.comm, currindex)
+  currindex = c(currindex, newindex)
+  if (i==1){
+    currindex = currindex[2:length(currindex)]}
+  cat("indici: ", currindex)
+  
+  g1 <- eliminate_another_community(g, fg.comm, currindex)
+  
+  summary(g1)
+  
+  maxdegree1 = max(degree(g1))
+  meandegree1 = mean(degree(g1))
+  #cat ("Grafo originale: Max degree: ",maxdegree, " , mean degree: ",meandegree, "\n", sep = "")
+  #cat ("Max degree: ",maxdegree1, " , mean degree: ",meandegree1, "\n", sep = "")
+  
+  ass1 = assortativity.degree(g1)
+  #cat ("Grafo originale: Assortativity degree: ",ass, "\n", sep = "")
+  #cat ("Assortativity degree: ",ass1, "\n", sep = "")
+  
+  tr1 =transitivity(g1)
+  tr_media1 = mean(transitivity(g1, "local"), na.rm = TRUE)
+  #cat ("Grafo originale: Transitivity: ",tr," ,transitivity media: ",tr_media, "\n", sep = "")
+  #cat ("Transitivity: ",tr1," ,transitivity media: ",tr_media1, "\n", sep = "")
+  
+  assortativityV = c(assortativityV, ass1)
+  maxdegreeV = c(maxdegreeV, maxdegree1)
+  meandegreeV = c(meandegreeV, meandegree1)
+  transitivityV = c(transitivityV, tr1)
+  meantransitivityV = c(meantransitivityV, tr_media1)
+}
 
-g1 <- eliminate_another_community(g, fg.comm, currindex)
-
-maxdegree1 = max(degree(g1))
-meandegree1 = mean(degree(g1))
-cat ("Grafo originale: Max degree: ",maxdegree, " , mean degree: ",meandegree, "\n", sep = "")
-cat ("Max degree: ",maxdegree1, " , mean degree: ",meandegree1, "\n", sep = "")
-
-ass1 = assortativity.degree(g1)
-cat ("Grafo originale: Assortativity degree: ",ass, "\n", sep = "")
-cat ("Assortativity degree: ",ass1, "\n", sep = "")
-
-tr1 =transitivity(g1)
-tr_media1 = mean(transitivity(g1, "local"), na.rm = TRUE)
-cat ("Grafo originale: Transitivity: ",tr," ,transitivity media: ",tr_media, "\n", sep = "")
-cat ("Transitivity: ",tr1," ,transitivity media: ",tr_media1, "\n", sep = "")
-
-```
-
-
-### Calcola e elimina comunità
-
-```{r}
-newindex = find_index_smaller_community(fg.comm, currindex)
-currindex = c(currindex, newindex)
-
-g2 <- eliminate_another_community(g, fg.comm, currindex)
-
-maxdegree1 = max(degree(g2))
-meandegree1 = mean(degree(g2))
-cat ("Grafo originale: Max degree: ",maxdegree, " , mean degree: ",meandegree, "\n", sep = "")
-cat ("Max degree: ",maxdegree1, " , mean degree: ",meandegree1, "\n", sep = "")
-
-ass1 = assortativity.degree(g2)
-cat ("Grafo originale: Assortativity degree: ",ass, "\n", sep = "")
-cat ("Assortativity degree: ",ass1, "\n", sep = "")
-
-tr1 =transitivity(g2)
-tr_media1 = mean(transitivity(g2, "local"), na.rm = TRUE)
-cat ("Grafo originale: Transitivity: ",tr," ,transitivity media: ",tr_media, "\n", sep = "")
-cat ("Transitivity: ",tr1," ,transitivity media: ",tr_media1, "\n", sep = "")
+result = data.frame(assortativityV, maxdegreeV, meandegreeV, assortativityV, transitivityV, meantransitivityV)
 
 ```
 
